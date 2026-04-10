@@ -140,9 +140,9 @@ EOF
                 script {
                     dir('Backend/shared-commons') {
                         if (isUnix()) {
-                            sh '../user-service/mvnw clean install -DskipTests'
+                            sh 'mvn clean install -DskipTests -B'
                         } else {
-                            bat '..\\user-service\\mvnw.cmd clean install -DskipTests'
+                            bat 'mvn clean install -DskipTests -B'
                         }
                     }
                 }
@@ -459,9 +459,9 @@ def buildBackendService(String service) {
     dir("Backend/${service}") {
         timeout(time: 10, unit: 'MINUTES') {
             if (isUnix()) {
-                sh './mvnw clean package -DskipTests -Dmaven.javadoc.skip=true'
+                sh 'if [ -f mvnw ]; then ./mvnw clean package -DskipTests -Dmaven.javadoc.skip=true; else mvn clean package -DskipTests -Dmaven.javadoc.skip=true; fi'
             } else {
-                bat 'mvnw.cmd clean package -DskipTests -Dmaven.javadoc.skip=true'
+                bat 'if exist mvnw.cmd (mvnw.cmd clean package -DskipTests -Dmaven.javadoc.skip=true) else (mvn clean package -DskipTests -Dmaven.javadoc.skip=true)'
             }
         }
     }
@@ -475,14 +475,13 @@ def testBackendService(String service) {
                     sh '''
                         echo "🧪 Testing ${service}..."
                         export JWT_SECRET="${JWT_SECRET}"
-                        ./mvnw test jacoco:report -B
+                        if [ -f mvnw ]; then ./mvnw test jacoco:report -B; else mvn test jacoco:report -B; fi
                         echo "✅ ${service} tests completed"
                     '''
                 } else {
                     bat '''
-                        echo Testing service: %1
                         set JWT_SECRET=%JWT_SECRET%
-                        mvnw.cmd test jacoco:report -B
+                        if exist mvnw.cmd (mvnw.cmd test jacoco:report -B) else (mvn test jacoco:report -B)
                         echo Tests completed
                     '''
                 }
