@@ -135,6 +135,20 @@ EOF
             }
         }
 
+        stage('Build Shared Commons') {
+            steps {
+                script {
+                    dir('Backend/shared-commons') {
+                        if (isUnix()) {
+                            sh '../user-service/mvnw clean install -DskipTests'
+                        } else {
+                            bat '..\\user-service\\mvnw.cmd clean install -DskipTests'
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Build') {
             parallel {
                 stage('Backend Services') {
@@ -166,7 +180,7 @@ EOF
                 stage('Backend Tests') {
                     steps {
                         script {
-                            ['user-service', 'product-service', 'media-service', 'api-gateway', 'order-service'].each { service ->
+                            ['shared-commons', 'user-service', 'product-service', 'media-service', 'api-gateway', 'order-service'].each { service ->
                                 testBackendService(service)
                             }
                         }
