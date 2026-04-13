@@ -20,8 +20,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- SonarCloud Configuration -->
-        <sonar.projectKey>ToniKorhonen_buy-01</sonar.projectKey>
-        <sonar.organization>tonikorhonen</sonar.organization>
+        <sonar.projectKey>Yssnogood_buy-01</sonar.projectKey>
+        <sonar.organization>yssnogood</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 

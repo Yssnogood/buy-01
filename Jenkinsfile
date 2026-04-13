@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         COMPOSE_PROJECT_NAME = 'buy01'
-        SONAR_ORGANIZATION = 'tonikorhonen'
-        SONAR_PROJECT_KEY = 'ToniKorhonen_buy-01'
+        SONAR_ORGANIZATION = 'yssnogood'
+        SONAR_PROJECT_KEY = 'Yssnogood_buy-01'
         SONAR_SCANNER_OPTS = '-Xmx512m'
         SONAR_SCANNER_SKIP_JRE = 'true'
         JWT_SECRET_TEST = 'test-jwt-secret-for-testing-only'
@@ -247,31 +247,33 @@ EOF
                             '''
                         }
 
-                        withSonarQubeEnv('SonarCloud') {
-                            if (isUnix()) {
-                                sh '''
-                                    echo "📥 Installing SonarQube Scanner..."
-                                    npm install -g sonarqube-scanner --force 2>&1 || true
-                                    
-                                    echo "🔍 Running SonarCloud analysis..."
-                                    sonar-scanner 2>&1 | tee sonar-analysis.log
-                                    
-                                    if grep -q "ERROR" sonar-analysis.log; then
-                                        echo "⚠️  SonarCloud analysis completed with warnings"
-                                    else
-                                        echo "✅ SonarCloud analysis submitted successfully"
-                                    fi
-                                '''
-                            } else {
-                                bat '''
-                                    echo Installing SonarQube Scanner...
-                                    npm install -g sonarqube-scanner --force 2>&1 || echo.
-                                    
-                                    echo Running SonarCloud analysis...
-                                    sonar-scanner
-                                    
-                                    echo SonarCloud analysis submitted
-                                '''
+                        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                            withSonarQubeEnv('SonarCloud') {
+                                if (isUnix()) {
+                                    sh '''
+                                        echo "📥 Installing SonarQube Scanner..."
+                                        npm install -g sonarqube-scanner --force 2>&1 || true
+
+                                        echo "🔍 Running SonarCloud analysis..."
+                                        sonar-scanner -Dsonar.token=$SONAR_TOKEN 2>&1 | tee sonar-analysis.log
+
+                                        if grep -q "ERROR" sonar-analysis.log; then
+                                            echo "⚠️  SonarCloud analysis completed with warnings"
+                                        else
+                                            echo "✅ SonarCloud analysis submitted successfully"
+                                        fi
+                                    '''
+                                } else {
+                                    bat '''
+                                        echo Installing SonarQube Scanner...
+                                        npm install -g sonarqube-scanner --force 2>&1 || echo.
+
+                                        echo Running SonarCloud analysis...
+                                        sonar-scanner -Dsonar.token=%SONAR_TOKEN%
+
+                                        echo SonarCloud analysis submitted
+                                    '''
+                                }
                             }
                         }
 
