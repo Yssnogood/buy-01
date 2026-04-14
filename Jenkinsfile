@@ -226,9 +226,6 @@ EOF
         }
 
         stage('Quality Gate') {
-            when {
-                expression { env.SHOULD_DEPLOY == 'true' || params.DEPLOY_ENV != 'auto' }
-            }
             steps {
                 script {
                     echo '📊 Running SonarCloud analysis...'
