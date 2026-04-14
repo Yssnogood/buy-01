@@ -154,7 +154,6 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
-        continue-on-error: true
 
       - name: Summary
         if: always()
@@ -168,7 +167,7 @@ jobs:
           echo "  ✓ Backend/api-gateway (Java)"
           echo "  ✓ Frontend (TypeScript/Angular)"
           echo ""
-          echo "🔗 View results: https://sonarcloud.io/project/overview?id=ToniKorhonen_buy-01"
+          echo "🔗 View results: https://sonarcloud.io/project/overview?id=Yssnogood_buy-01"
           echo ""
           echo "📈 Metrics available:"
           echo "  - Code coverage per service"

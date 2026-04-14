@@ -1,0 +1,9 @@
+# Default owners for all files in this repository.
+# Replace with the exact GitHub usernames/team used by your project.
+* @Yssnogood
+
+# Optional stricter ownership for CI/CD and backend changes.
+Jenkinsfile @Yssnogood
+.github/workflows/* @Yssnogood
+Backend/** @Yssnogood
+Frontend/** @Yssnogood

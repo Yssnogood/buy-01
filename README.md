@@ -98,15 +98,19 @@ This project includes a complete Jenkins pipeline for automated building, testin
 
 ## 🔍 Code Quality with SonarCloud
 
-Automated code quality analysis runs on every push using GitHub Actions.
+Automated code quality analysis is enforced in the Jenkins CI/CD pipeline using SonarCloud.
 
 ### Quick Setup (5 minutes)
 
 1. **Get SonarCloud Token**: https://sonarcloud.io → My Account → Security → Generate Token
-2. **Add GitHub Secrets**:
-   - `SONAR_TOKEN` - Your SonarCloud token
-   - `SONAR_ORGANIZATION` - Your SonarCloud organization key
-3. **Push to GitHub** - Analysis runs automatically!
+2. **Add Jenkins Credential**:
+   - Type: Secret text
+   - ID: `SONAR_TOKEN`
+   - Value: Your SonarCloud token
+3. **Configure Sonar server in Jenkins**:
+   - Name: `SonarCloud`
+   - URL: `https://sonarcloud.io`
+4. **Run Jenkins pipeline** - SonarCloud analysis and Quality Gate are enforced by default.
 
 ### What's Analyzed
 
@@ -117,21 +121,22 @@ Automated code quality analysis runs on every push using GitHub Actions.
 
 ### View Results
 
-- **GitHub**: Actions tab → SonarCloud Analysis workflow
-- **SonarCloud**: https://sonarcloud.io → Your organization
+- **Jenkins**: Pipeline build logs and Quality Gate stage
+- **SonarCloud**: https://sonarcloud.io/project/overview?id=Yssnogood_buy-01
 
-📚 **Documentation**: 
-- [Quick Start Guide](docs/GITHUB_ACTIONS_QUICK_START.md)
-- [Complete Guide](docs/GITHUB_ACTIONS_SONARCLOUD.md)
-- [Troubleshooting Common Issues](docs/SONARCLOUD_TROUBLESHOOTING.md)
-- [Quick Fix: Automatic Analysis Error](docs/SONARCLOUD_QUICK_FIX.md)
+### Code Review and Approval Policy
+
+- Protect `main` and `master` branches in GitHub.
+- Require at least 1 pull request approval before merge.
+- Require passing CI checks (Jenkins pipeline with SonarCloud Quality Gate).
+- CODEOWNERS file is provided in `.github/CODEOWNERS` for review ownership.
 
 ### Jenkins vs GitHub Actions
 
 Both work together for comprehensive CI/CD:
 
-- **Jenkins**: Local builds, deployment, full control
-- **GitHub Actions**: Cloud-based analysis, PR checks, SonarCloud integration
+- **Jenkins**: Primary CI/CD, SonarCloud analysis, deployment control, quality gate enforcement
+- **GitHub Actions**: Optional secondary SonarCloud validation for PR visibility
 
 ## 📋 Prerequisites
 

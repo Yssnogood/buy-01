@@ -19,7 +19,7 @@ pipeline {
         choice(name: 'DEPLOY_ENV', choices: ['auto', 'dev', 'prod'], description: 'Deployment environment')
         booleanParam(name: 'SKIP_TESTS', defaultValue: false, description: 'Skip tests')
         booleanParam(name: 'CLEAN_DOCKER', defaultValue: false, description: 'Clean Docker images')
-        booleanParam(name: 'ENFORCE_QUALITY_GATE', defaultValue: false, description: 'Enforce SonarCloud gate')
+        booleanParam(name: 'ENFORCE_QUALITY_GATE', defaultValue: true, description: 'Enforce SonarCloud gate')
         string(name: 'EMAIL_RECIPIENTS', defaultValue: 'team@example.com', description: 'Email recipients')
     }
 
@@ -294,9 +294,8 @@ EOF
                             echo '✅ SonarCloud analysis completed (Quality Gate not enforced)'
                         }
                     } catch (Exception e) {
-                        echo "⚠️  SonarCloud analysis encountered an issue: ${e.message}"
-                        echo "ℹ️  This is non-blocking — continuing pipeline"
-                        // Non-blocking error for SonarCloud
+                        echo "❌ SonarCloud analysis encountered an issue: ${e.message}"
+                        error "SonarCloud analysis failed. Stopping pipeline."
                     }
                 }
             }
