@@ -48,17 +48,28 @@ pipeline {
 
                     def deployBranches = ['main', 'master', 'dev']
                     def approvalBranches = ['main', 'master']
-                    env.SHOULD_DEPLOY = deployBranches.contains(env.BRANCH_NAME) ? 'true' : 'false'
-                    env.NEEDS_APPROVAL = approvalBranches.contains(env.BRANCH_NAME) ? 'true' : 'false'
+                    def normalizedBranch = (env.BRANCH_NAME ?: '')
+                        .replaceFirst('^origin/', '')
+                        .replaceFirst('^refs/heads/', '')
+
+                    def isDeployBranch = deployBranches.contains(normalizedBranch)
+                    def isApprovalBranch = approvalBranches.contains(normalizedBranch)
+                    def manualDeployRequested = params.DEPLOY_ENV != 'auto'
+
+                    env.SHOULD_DEPLOY = (isDeployBranch || manualDeployRequested) ? 'true' : 'false'
+                    env.NEEDS_APPROVAL = ((params.DEPLOY_ENV == 'prod') || (params.DEPLOY_ENV == 'auto' && isApprovalBranch)) ? 'true' : 'false'
 
                     echo """
                     ╔════════════════════════════════════╗
                     ║   BUILD INITIALIZATION             ║
                     ╠════════════════════════════════════╣
                     ║ Branch:     ${env.BRANCH_NAME}
+                    ║ BranchNorm: ${normalizedBranch}
+                    ║ Deploy Env: ${params.DEPLOY_ENV}
                     ║ Build #:    ${env.BUILD_NUMBER}
                     ║ Commit:     ${env.GIT_COMMIT_SHORT}
                     ║ Deploy:     ${env.SHOULD_DEPLOY}
+                    ║ Approval:   ${env.NEEDS_APPROVAL}
                     ║ Email:      ${params.EMAIL_RECIPIENTS}
                     ╚════════════════════════════════════╝
                     """
@@ -246,11 +257,20 @@ EOF
 
                         withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
                             withSonarQubeEnv('SonarCloud') {
-                                def scannerHome = tool 'SonarScanner'
+                                def scannerCmdUnix = 'sonar-scanner'
+                                def scannerCmdWin = 'sonar-scanner'
+                                try {
+                                    def scannerHome = tool 'SonarScanner'
+                                    scannerCmdUnix = "\"${scannerHome}/bin/sonar-scanner\""
+                                    scannerCmdWin = "\"${scannerHome}\\bin\\sonar-scanner.bat\""
+                                    echo "✅ Using Jenkins SonarScanner tool: ${scannerHome}"
+                                } catch (Exception _) {
+                                    echo '⚠️ Jenkins tool "SonarScanner" not found. Falling back to sonar-scanner from PATH.'
+                                }
                                 if (isUnix()) {
                                     sh """
                                         echo "🔍 Running SonarCloud analysis..."
-                                        "${scannerHome}/bin/sonar-scanner" -Dsonar.token=$SONAR_TOKEN 2>&1 | tee sonar-analysis.log
+                                        ${scannerCmdUnix} -Dsonar.token=$SONAR_TOKEN 2>&1 | tee sonar-analysis.log
 
                                         if grep -q "ERROR" sonar-analysis.log; then
                                             echo "⚠️  SonarCloud analysis completed with warnings"
@@ -261,7 +281,7 @@ EOF
                                 } else {
                                     bat """
                                         echo Running SonarCloud analysis...
-                                        call "${scannerHome}\\bin\\sonar-scanner.bat" -Dsonar.token=%SONAR_TOKEN%
+                                        call ${scannerCmdWin} -Dsonar.token=%SONAR_TOKEN%
 
                                         echo SonarCloud analysis submitted
                                     """
