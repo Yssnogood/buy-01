@@ -246,30 +246,25 @@ EOF
 
                         withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
                             withSonarQubeEnv('SonarCloud') {
+                                def scannerHome = tool 'SonarScanner'
                                 if (isUnix()) {
-                                    sh '''
-                                        echo "📥 Installing SonarQube Scanner..."
-                                        npm install -g sonarqube-scanner --force 2>&1 || true
-
+                                    sh """
                                         echo "🔍 Running SonarCloud analysis..."
-                                        sonar-scanner -Dsonar.token=$SONAR_TOKEN 2>&1 | tee sonar-analysis.log
+                                        "${scannerHome}/bin/sonar-scanner" -Dsonar.token=$SONAR_TOKEN 2>&1 | tee sonar-analysis.log
 
                                         if grep -q "ERROR" sonar-analysis.log; then
                                             echo "⚠️  SonarCloud analysis completed with warnings"
                                         else
                                             echo "✅ SonarCloud analysis submitted successfully"
                                         fi
-                                    '''
+                                    """
                                 } else {
-                                    bat '''
-                                        echo Installing SonarQube Scanner...
-                                        npm install -g sonarqube-scanner --force 2>&1 || echo.
-
+                                    bat """
                                         echo Running SonarCloud analysis...
-                                        sonar-scanner -Dsonar.token=%SONAR_TOKEN%
+                                        call "${scannerHome}\\bin\\sonar-scanner.bat" -Dsonar.token=%SONAR_TOKEN%
 
                                         echo SonarCloud analysis submitted
-                                    '''
+                                    """
                                 }
                             }
                         }
