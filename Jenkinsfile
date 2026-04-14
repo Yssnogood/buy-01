@@ -48,7 +48,15 @@ pipeline {
 
                     def deployBranches = ['main', 'master', 'dev']
                     def approvalBranches = ['main', 'master']
-                    def normalizedBranch = (env.BRANCH_NAME ?: '')
+                    def branchFromGit = ''
+                    if (isUnix()) {
+                        branchFromGit = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+                    } else {
+                        branchFromGit = powershell(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+                    }
+
+                    def effectiveBranch = (env.BRANCH_NAME ?: env.GIT_BRANCH ?: branchFromGit ?: '')
+                    def normalizedBranch = effectiveBranch
                         .replaceFirst('^origin/', '')
                         .replaceFirst('^refs/heads/', '')
 
@@ -64,6 +72,8 @@ pipeline {
                     ║   BUILD INITIALIZATION             ║
                     ╠════════════════════════════════════╣
                     ║ Branch:     ${env.BRANCH_NAME}
+                    ║ Git Branch: ${env.GIT_BRANCH}
+                    ║ Effective:  ${effectiveBranch}
                     ║ BranchNorm: ${normalizedBranch}
                     ║ Deploy Env: ${params.DEPLOY_ENV}
                     ║ Build #:    ${env.BUILD_NUMBER}
